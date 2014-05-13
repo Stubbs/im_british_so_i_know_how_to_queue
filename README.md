@@ -1,4 +1,4 @@
-im_british_so_i_know_how_to_queue
+Im British So I Know How To Queue
 =================================
 
 Repository for beta readers to report issues.
