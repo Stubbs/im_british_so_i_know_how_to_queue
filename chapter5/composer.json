@@ -1,0 +1,14 @@
+{
+    "name": "im_british/chapter4",
+    "description": "Source code for the book I'm British So I Know How To Queue",
+    "require": {
+        "symfony/console": "2.6.*@dev",
+        "symfony/config": "2.6.*@dev",
+        "videlalvaro/php-amqplib": "2.2.*",
+        "symfony/dependency-injection": "2.6.*@dev",
+        "symfony/yaml": "2.6.*@dev"
+    },
+    "autoload": {
+        "psr-0": { "ImBritish": "src/" }
+    }
+}

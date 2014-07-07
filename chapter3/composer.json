@@ -1,0 +1,6 @@
+{
+    "name": "im_british/consumer_chapter3",
+    "require": {
+        "videlalvaro/php-amqplib": "2.2.*"
+    }
+}
