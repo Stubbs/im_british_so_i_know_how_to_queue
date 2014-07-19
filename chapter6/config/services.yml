@@ -1,0 +1,17 @@
+parameters:
+    queue: chapter5
+        name: chapter6
+        max_consumers: 2
+
+services:
+    symfony.application:
+        class: Symfony\Component\Console\Application
+        arguments: ["I'm British So I know How To Queue", "0.0.1"]
+    helper.pid:
+        class: ImBritish\PidHelper
+    command.consume:
+        class: ImBritish\ConsumeCommand
+        arguments: ["@helper.pid"]
+    command.stop:
+        class: ImBritish\StopCommand
+        arguments: ["@helper.pid"]
