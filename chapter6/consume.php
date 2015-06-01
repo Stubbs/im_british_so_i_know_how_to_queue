@@ -15,14 +15,17 @@ $container = new ContainerBuilder();
 $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/config/'));
 $loader->load('services.yml');
 
+$container->set('container', $container);
+
 // Our App object.
 $app = $container->get('symfony.application');
 
-// Add a couple of services as defined in the config, not the constructor
+// Add a couple of services as defined in the config, note the constructor
 // parameters are also passed in that config.
 $app->addCommands([
     $container->get('command.consume'),
     $container->get('command.stop'),
+    $container->get('command.pour'),
     ]);
 
 $app->run();

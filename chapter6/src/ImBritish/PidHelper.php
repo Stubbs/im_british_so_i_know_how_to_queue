@@ -9,14 +9,53 @@ class PidHelper
 {
     private $path="/tmp";
 
-    public function savePidfile($queueName)
+    protected function writePidfile($queueName, $pids)
     {
-        return @file_put_contents($this->path . "/" . $queueName . "_consumer.pid", getmypid());
+        $handle = fopen($this->getFilename($queueName), "w");
+
+        foreach ($pids as $pid) {
+            fwrite($handle, trim($pid) . "\n");
+        }
+
+        fclose($handle);
     }
 
-    public function getPid($queueName)
+    public function savePidfile($queueName)
     {
-        return @file_get_contents($this->path . "/" . $queueName . "_consumer.pid");
+        $currentPids = $this->getPids($queueName);
+
+        $currentPids[] = getmypid();
+        $this->writePidfile($queueName, $currentPids);
+    }
+
+    public function getPids($queueName)
+    {
+        if (!file_exists($this->getFilename($queueName))) {
+            return array();
+        }
+
+        $pids = file($this->getFilename($queueName));
+
+        return array_map('trim', $pids);
+    }
+
+    public function removePid($queueName, $pid)
+    {
+        if (file_exists($this->getFilename($queueName))) {
+            $pids = $this->getPids($queueName);
+
+            $newPids = array_diff($pids, array($pid));
+
+            if (count($newPids) == 0) {
+                $this->removePidfile($queueName);
+                return;
+            }
+
+            $this->writePidfile($queueName, $newPids);
+            return;
+        }
+
+        throw new \Exception('Something has gone very wrong, trying to remove pid $pid from the pidfile, but it has been deleted.');
     }
 
     public function removePidfile($queueName)
@@ -26,16 +65,30 @@ class PidHelper
 
     public function isRunning($queueName)
     {
-        if ($this->getPid($queueName) <= 0) {
+        if ($this->getProcessCount($queueName) <= 0) {
             return false;
         }
 
-        exec("ps -p " . $this->getPid($queueName), $output);
-        if (count($output) > 1) {
-            return true;
+        $pids = $this->getPids($queueName);
+
+        foreach ($pids as $pid) {
+            exec("ps -p " . $pid, $output);
+
+            if (count($output) < 1) {
+                return false;
+            }
         }
 
-        return false;
+        return true;
+    }
 
+    public function getProcessCount($queueName)
+    {
+        return file_exists($this->getFilename($queueName)) ? count(file($this->getFilename($queueName))) : 0;
+    }
+
+    public function getFilename($queueName)
+    {
+        return $this->path . "/" . $queueName . "_consumer.pid";
     }
 }

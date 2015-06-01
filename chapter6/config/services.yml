@@ -1,17 +1,22 @@
 parameters:
-    queue: chapter5
-        name: chapter6
-        max_consumers: 2
+    queues:
+        chapter6:
+            max_consumers: 2
+            messages_per_consumer: 40
 
 services:
+    container:
+        synthetic: true
     symfony.application:
         class: Symfony\Component\Console\Application
-        arguments: ["I'm British So I know How To Queue", "0.0.1"]
+        arguments: ["I'm British So I know How To Queue", "Chapter 6"]
     helper.pid:
         class: ImBritish\PidHelper
     command.consume:
         class: ImBritish\ConsumeCommand
-        arguments: ["@helper.pid"]
+        arguments: ["@helper.pid", "@container"]
     command.stop:
         class: ImBritish\StopCommand
         arguments: ["@helper.pid"]
+    command.pour:
+        class: ImBritish\PourCommand

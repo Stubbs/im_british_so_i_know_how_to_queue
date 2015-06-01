@@ -28,7 +28,7 @@ class ConsumeCommand extends Command
         $connection = new AMQPConnection('localhost', 5672, 'client', 'client', '/');
         $channel = $connection->channel();
         $channel->queue_declare($this->queue, false, true, false, false);
-        $channel->exchange_declare($this->exchange, 'topic', false, true, false);
+        $channel->exchange_declare($this->exchange, 'direct', false, true, false);
         $channel->queue_bind($this->queue, $this->exchange);
 
         $channel->basic_consume(

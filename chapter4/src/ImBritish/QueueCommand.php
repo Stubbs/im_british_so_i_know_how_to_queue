@@ -29,7 +29,7 @@ class QueueCommand extends Command
         $connection = new AMQPConnection('localhost', 5672, 'client', 'client', '/');
         $channel = $connection->channel();
         $channel->queue_declare($queue, false, true, false, false);
-        $channel->exchange_declare($exchange, 'topic', false, true, false);
+        $channel->exchange_declare($exchange, 'direct', false, true, false);
         $channel->queue_bind($queue, $exchange);
 
         $channel->basic_consume($queue, 'chapter4_consumer', false, true, false, false,

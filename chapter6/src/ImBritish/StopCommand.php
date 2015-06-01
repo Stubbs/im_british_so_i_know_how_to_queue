@@ -6,12 +6,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class StopCommand extends Command
 {
-    private $queue = "chapter5";
-    private $container;
+    private $queue;
     private $pidHelper;
 
     public function __construct(PidHelper $pidHelper)
@@ -25,21 +23,27 @@ class StopCommand extends Command
     {
         $this
             ->setName('stop')
-            ->setDescription('Stop any consumers for the given queue.');
+            ->setDescription('Stop any consumers for the given queue.')
+            ->addArgument('queue', InputArgument::REQUIRED, 'The name of the queue you want to stop.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $pid = $this->pidHelper->getPid($this->queue);
+        $this->queue = $input->getArgument('queue');
 
-        if ($pid == -1) {
+        // When running with multiple pids we must stop them all
+        $pids = $this->pidHelper->getPids($this->queue);
+
+        if (!$this->pidHelper->isRunning($this->queue)) {
             $output->writeln("<comment>Process for " . $this->queue . " isn't running</comment>");
             return;
         }
 
-        $output->writeln("<info>Stopping Consumer " . $this->queue . " (PID: " . $pid . ")");
+        $output->writeln("<info>Stopping Consumer " . $this->queue);
 
-        posix_kill($pid, SIGQUIT);
+        foreach ($pids as $pid) {
+            posix_kill($pid, SIGQUIT);
+        }
 
         // Pause, should be enough to stop the process.
         sleep(1);
@@ -47,13 +51,13 @@ class StopCommand extends Command
         $retryCount = 0;
 
         while ($this->pidHelper->isRunning($this->queue)) {
-            $output->writeln("<info>     Waiting for Consumer " . $this->queue . " (PID: " . $pid . ")");
+            $output->writeln("<info>     Waiting for Consumer " . $this->queue);
             sleep(1);
 
             $retryCount++;
 
             if ($retryCount > 5) {
-                $output->writeln("<error>Unable to stop queue " . $this->queue . " (PID: " . $pid . ")");
+                $output->writeln("<error>Unable to stop queue " . $this->queue);
                 exit(1);
             }
         }

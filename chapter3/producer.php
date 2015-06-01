@@ -1,17 +1,17 @@
 <?php
 
-require_once('vendor/autoload.php');
+require_once('./vendor/autoload.php');
 
 use PhpAmqpLib\Connection\AMQPConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
-$queue = 'chapter5';
+$queue = 'chapter3';
 $exchange = 'im_british_examples';
 
 $connection = new AMQPConnection('localhost', 5672, 'client', 'client', '/');
 $channel = $connection->channel();
 $channel->queue_declare($queue, false, true, false, false);
-$channel->exchange_declare($exchange, 'topic', false, true, false);
+$channel->exchange_declare($exchange, 'direct', false, true, false);
 $channel->queue_bind($queue, $exchange);
 
 $body = implode(" ", array_slice($argv, 1));
